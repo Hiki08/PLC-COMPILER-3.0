@@ -242,84 +242,121 @@ class rDB():
             pd.set_option('display.max_columns', None)
             pd.set_option('display.max_rows', None)
 
-            try:
+            while not self.fileFinishedReading:
+                try:
+                    vt1Directory = (fr'\\192.168.2.19\quality control\{str(self.readingYear)}')
 
-                vt1Directory = (fr'\\192.168.2.19\quality control\{str(self.readingYear)}')
+                    for d in os.listdir(vt1Directory):
+                        if "supplier" in d.lower():
+                            vt1Directory = os.path.join(vt1Directory, d)
+                            for d in os.listdir(vt1Directory):
+                                if "inspection standard" in d.lower():
+                                    vt1Directory = os.path.join(vt1Directory, d)
+                                    for d in os.listdir(vt1Directory):
+                                        if "receiving inspection record" in d.lower():
+                                            vt1Directory = os.path.join(vt1Directory, d)
 
-                for d in os.listdir(vt1Directory):
-                    if "supplier" in d.lower():
-                        vt1Directory = os.path.join(vt1Directory, d)
-                        for d in os.listdir(vt1Directory):
-                            if "inspection standard" in d.lower():
-                                vt1Directory = os.path.join(vt1Directory, d)
-                                for d in os.listdir(vt1Directory):
-                                    if "receiving inspection record" in d.lower():
-                                        vt1Directory = os.path.join(vt1Directory, d)
+                                            #CHECKING ITEM CODE
+                                            if self.rdbModelCode == "RDB5200200":
+                                                for d in os.listdir(vt1Directory):
+                                                    if "sbros" in d.lower():
+                                                        vt1Directory = os.path.join(vt1Directory, d)
 
-                                        #CHECKING ITEM CODE
-                                        if self.rdbModelCode == "RDB5200200":
-                                            for d in os.listdir(vt1Directory):
-                                                if "sbros" in d.lower():
-                                                    vt1Directory = os.path.join(vt1Directory, d)
+                                                        #Finding A Folder That Contains New Trend
+                                                        for d in os.listdir(vt1Directory):
+                                                            if 'new trend' in d.lower():
+                                                                vt1Directory = os.path.join(vt1Directory, d)
+                                                                print(f"Updated vt1Directory: {vt1Directory}")
+                                                                break
 
-                                                    #Finding A Folder That Contains New Trend
-                                                    for d in os.listdir(vt1Directory):
-                                                        if 'new trend' in d.lower():
-                                                            vt1Directory = os.path.join(vt1Directory, d)
-                                                            print(f"Updated vt1Directory: {vt1Directory}")
-                                                            break
+                                                        os.chdir(vt1Directory)
 
-                                                    os.chdir(vt1Directory)
+                                                        files = glob.glob('*RD05200200*.xlsm')
 
-                                                    files = glob.glob('*RD05200200*.xlsm')
+                                                        for f in files:
+                                                            print(f'File Readed {f}')
+                                                            workbook = CalamineWorkbook.from_path(f)
 
-                                                    for f in files:
-                                                        print(f'File Readed {f}')
-                                                        workbook = CalamineWorkbook.from_path(f)
+                                                            self.rdbData = workbook.get_sheet_by_name("format").to_python(skip_empty_area=True)
+                                                            self.rdbData = pd.DataFrame(self.rdbData)
+                                                            self.rdbData = self.rdbData.replace(r'\s+', '', regex=True)
+                                                            
+                                                            # print(f"EM2P FINDED IN {self.readingYear} NEW TREND")
+                                                            self.fileList.append(self.rdbData)
 
-                                                        self.rdbData = workbook.get_sheet_by_name("format").to_python(skip_empty_area=True)
-                                                        self.rdbData = pd.DataFrame(self.rdbData)
-                                                        self.rdbData = self.rdbData.replace(r'\s+', '', regex=True)
-                                                        
-                                                        # print(f"EM2P FINDED IN {self.readingYear} NEW TREND")
-                                                        self.fileList.append(self.rdbData)
+                                            elif self.rdbModelCode == "RDB4200801":      
+                                                for d in os.listdir(vt1Directory):
+                                                    if "ningbo" in d.lower():
+                                                        vt1Directory = os.path.join(vt1Directory, d)
+                
+                                                        #Finding A Folder That Contains New Trend
+                                                        for d in os.listdir(vt1Directory):
+                                                            if 'new trend' in d.lower():
+                                                                vt1Directory = os.path.join(vt1Directory, d)
+                                                                print(f"Updated vt1Directory: {vt1Directory}")
+                                                                break
 
-                                        elif self.rdbModelCode == "RDB4200801":      
-                                            for d in os.listdir(vt1Directory):
-                                                if "ningbo" in d.lower():
-                                                    vt1Directory = os.path.join(vt1Directory, d)
-            
-                                                    #Finding A Folder That Contains New Trend
-                                                    for d in os.listdir(vt1Directory):
-                                                        if 'new trend' in d.lower():
-                                                            vt1Directory = os.path.join(vt1Directory, d)
-                                                            print(f"Updated vt1Directory: {vt1Directory}")
-                                                            break
+                                                        os.chdir(vt1Directory)
 
-                                                    os.chdir(vt1Directory)
+                                                        files = glob.glob('*RDB4200801*.xlsm')
 
-                                                    files = glob.glob('*RDB4200801*.xlsm')
+                                                        for f in files:
+                                                            print(f'File Readed {f}')
+                                                            workbook = CalamineWorkbook.from_path(f)
 
-                                                    for f in files:
-                                                        print(f'File Readed {f}')
-                                                        workbook = CalamineWorkbook.from_path(f)
+                                                            self.rdbData = workbook.get_sheet_by_name("format").to_python(skip_empty_area=True)
+                                                            self.rdbData = pd.DataFrame(self.rdbData)
+                                                            self.rdbData = self.rdbData.replace(r'\s+', '', regex=True)
+                                                            
+                                                            # print(f"EM2P FINDED IN {self.readingYear} NEW TREND")
+                                                            self.fileList.append(self.rdbData)
+                                                            
+                except:
+                    pass
 
-                                                        self.rdbData = workbook.get_sheet_by_name("format").to_python(skip_empty_area=True)
-                                                        self.rdbData = pd.DataFrame(self.rdbData)
-                                                        self.rdbData = self.rdbData.replace(r'\s+', '', regex=True)
-                                                        
-                                                        # print(f"EM2P FINDED IN {self.readingYear} NEW TREND")
-                                                        self.fileList.append(self.rdbData)
-                                                        
-            except:
-                pass
+                if self.readingYear > 2021:
+                    self.readingYear -= 1
+                else:
+                    self.fileFinishedReading = True
+
+        for file in self.fileList:
+            file.replace('', np.nan, inplace=True)
 
     def GettingData(self):
         if not self.rdbNoDataFound:
+            for fileNum in range(len(self.fileList)):
+                self.rdbTotalAverage1 = []
+                self.rdbTotalAverage2 = []
+                self.rdbTotalAverage3 = []
+                self.rdbTotalAverage4 = []
+                self.rdbTotalAverage5 = []
+                self.rdbTotalAverage6 = []
+                self.rdbTotalAverage7 = []
+                self.rdbTotalAverage8 = []
+                self.rdbTotalAverage9 = []
 
-            if self.rdbModelCode == "RDB5200200":
+                self.rdbTotalMinimum1 = []
+                self.rdbTotalMinimum2 = []
+                self.rdbTotalMinimum3 = []
+                self.rdbTotalMinimum4 = []
+                self.rdbTotalMinimum5 = []
+                self.rdbTotalMinimum6 = []
+                self.rdbTotalMinimum7 = []
+                self.rdbTotalMinimum8 = []
+                self.rdbTotalMinimum9 = []
+
+                self.rdbTotalMaximum1 = []
+                self.rdbTotalMaximum2 = []
+                self.rdbTotalMaximum3 = []
+                self.rdbTotalMaximum4 = []
+                self.rdbTotalMaximum5 = []
+                self.rdbTotalMaximum6 = []
+                self.rdbTotalMaximum7 = []
+                self.rdbTotalMaximum8 = []
+                self.rdbTotalMaximum9 = []
+                
                 #Getting The Row, Column Location Of HIBLOW
-                findHiblow = [(index, column) for index, row in self.rdbData.iterrows() for column, value in row.items() if value == "SUPPLIER"]
+                findHiblow = [(index, column) for index, row in self.fileList[fileNum].iterrows() for column, value in row.items() if value == "SUPPLIER"]
                 hiblowRow = [index for index, _ in findHiblow]
                 hiblowColumn = [column for _, column in findHiblow]
 
@@ -327,123 +364,248 @@ class rDB():
                 print("Column names:", hiblowColumn)
 
                 # Get the Neighboring Data Of Hiblow
-                hiblowFiltered = self.rdbData.iloc[max(0, hiblowRow[0] - 3):min(len(self.rdbData), hiblowRow[0] + 10), self.rdbData.columns.get_loc(hiblowColumn[0]):self.rdbData.columns.get_loc(hiblowColumn[0]) + 999999]
+                hiblowFiltered = self.fileList[fileNum].iloc[max(0, hiblowRow[0] - 3):min(len(self.fileList[fileNum]), hiblowRow[0] + 10), self.fileList[fileNum].columns.get_loc(hiblowColumn[0]):self.fileList[fileNum].columns.get_loc(hiblowColumn[0]) + 999999]
 
-                #Getting The Row, Column Location Of Lot Number
-                findLotNumber = [(index, column) for index, row in hiblowFiltered.iterrows() for column, value in row.items() if value == self.rdbLotNumber3]
-                lotNumberRow = [index for index, _ in findLotNumber]
-                lotNumberColumn = [column for _, column in findLotNumber]
+                try:
+                    if self.rdbModelCode == "RDB5200200":
+                        #Getting The Row, Column Location Of Lot Number
+                        findLotNumber = [(index, column) for index, row in hiblowFiltered.iterrows() for column, value in row.items() if value == self.rdbLotNumber3]
+                        lotNumberRow = [index for index, _ in findLotNumber]
+                        lotNumberColumn = [column for _, column in findLotNumber]
+                    elif self.rdbModelCode == "RDB4200801":
+                        #Getting The Row, Column Location Of Lot Number
+                        findLotNumber = [(index, column) for index, row in hiblowFiltered.iterrows() for column, value in row.items() if value == self.rdbLotNumber]
+                        lotNumberRow = [index for index, _ in findLotNumber]
+                        lotNumberColumn = [column for _, column in findLotNumber]
 
-                print("Row indices:", lotNumberRow)
-                print("Column names:", lotNumberColumn)
+                    print("Row indices:", lotNumberRow)
+                    print("Column names:", lotNumberColumn)
 
-                for a in range(0, len(lotNumberColumn)):
-                    # Get The Neighboring Data of Lot Number
-                    inspectionData = self.rdbData.iloc[max(0, lotNumberRow[a]):min(len(self.rdbData), lotNumberRow[a] + 11), self.rdbData.columns.get_loc(lotNumberColumn[a]):self.rdbData.columns.get_loc(lotNumberColumn[a]) + 5]
+                    for a in range(0, len(lotNumberColumn)):
+                        # Get The Neighboring Data of Lot Number
+                        inspectionData = self.fileList[fileNum].iloc[max(0, lotNumberRow[a]):min(len(self.fileList[fileNum]), lotNumberRow[a] + 12), self.fileList[fileNum].columns.get_loc(lotNumberColumn[a]):self.fileList[fileNum].columns.get_loc(lotNumberColumn[a]) + 5]
 
-                    average1 = inspectionData.iloc[3].mean()
-                    average2 = inspectionData.iloc[4].mean()
-                    average3 = inspectionData.iloc[5].mean()
-                    average4 = inspectionData.iloc[6].mean()
-                    average5 = inspectionData.iloc[7].mean()
-                    average6 = inspectionData.iloc[8].mean()
-                    average8 = inspectionData.iloc[10].mean()
+                        if self.rdbModelCode == "RDB5200200":
 
-                    minimum1 = inspectionData.iloc[3].min()
-                    minimum2 = inspectionData.iloc[4].min()
-                    minimum3 = inspectionData.iloc[5].min()
-                    minimum4 = inspectionData.iloc[6].min()
-                    minimum5 = inspectionData.iloc[7].min()
-                    minimum6 = inspectionData.iloc[8].min()
-                    minimum8 = inspectionData.iloc[10].min()
+                            average1 = inspectionData.iloc[3].mean()
+                            average2 = inspectionData.iloc[4].mean()
+                            average3 = inspectionData.iloc[5].mean()
+                            average4 = inspectionData.iloc[6].mean()
+                            average5 = inspectionData.iloc[7].mean()
+                            average6 = inspectionData.iloc[8].mean()
+                            average8 = inspectionData.iloc[10].mean()
 
-                    maximum1 = inspectionData.iloc[3].max()
-                    maximum2 = inspectionData.iloc[4].max()
-                    maximum3 = inspectionData.iloc[5].max()
-                    maximum4 = inspectionData.iloc[6].max()
-                    maximum5 = inspectionData.iloc[7].max()
-                    maximum6 = inspectionData.iloc[8].max()
-                    maximum8 = inspectionData.iloc[10].max()
+                            minimum1 = inspectionData.iloc[3].min()
+                            minimum2 = inspectionData.iloc[4].min()
+                            minimum3 = inspectionData.iloc[5].min()
+                            minimum4 = inspectionData.iloc[6].min()
+                            minimum5 = inspectionData.iloc[7].min()
+                            minimum6 = inspectionData.iloc[8].min()
+                            minimum8 = inspectionData.iloc[10].min()
 
-                    self.rdbTotalAverage1.append(average1)
-                    self.rdbTotalAverage2.append(average2)
-                    self.rdbTotalAverage3.append(average3)
-                    self.rdbTotalAverage4.append(average4)
-                    self.rdbTotalAverage5.append(average5)
-                    self.rdbTotalAverage6.append(average6)
-                    self.rdbTotalAverage8.append(average8)
+                            maximum1 = inspectionData.iloc[3].max()
+                            maximum2 = inspectionData.iloc[4].max()
+                            maximum3 = inspectionData.iloc[5].max()
+                            maximum4 = inspectionData.iloc[6].max()
+                            maximum5 = inspectionData.iloc[7].max()
+                            maximum6 = inspectionData.iloc[8].max()
+                            maximum8 = inspectionData.iloc[10].max()
 
-                    self.rdbTotalMinimum1.append(minimum1)
-                    self.rdbTotalMinimum2.append(minimum2)
-                    self.rdbTotalMinimum3.append(minimum3)
-                    self.rdbTotalMinimum4.append(minimum4)
-                    self.rdbTotalMinimum5.append(minimum5)
-                    self.rdbTotalMinimum6.append(minimum6)
-                    self.rdbTotalMinimum8.append(minimum8)
+                            self.rdbTotalAverage1.append(average1)
+                            self.rdbTotalAverage2.append(average2)
+                            self.rdbTotalAverage3.append(average3)
+                            self.rdbTotalAverage4.append(average4)
+                            self.rdbTotalAverage5.append(average5)
+                            self.rdbTotalAverage6.append(average6)
+                            self.rdbTotalAverage8.append(average8)
 
-                    self.rdbTotalMaximum1.append(maximum1)
-                    self.rdbTotalMaximum2.append(maximum2)
-                    self.rdbTotalMaximum3.append(maximum3)
-                    self.rdbTotalMaximum4.append(maximum4)
-                    self.rdbTotalMaximum5.append(maximum5)
-                    self.rdbTotalMaximum6.append(maximum6)
-                    self.rdbTotalMaximum8.append(maximum8)
+                            self.rdbTotalMinimum1.append(minimum1)
+                            self.rdbTotalMinimum2.append(minimum2)
+                            self.rdbTotalMinimum3.append(minimum3)
+                            self.rdbTotalMinimum4.append(minimum4)
+                            self.rdbTotalMinimum5.append(minimum5)
+                            self.rdbTotalMinimum6.append(minimum6)
+                            self.rdbTotalMinimum8.append(minimum8)
 
-                self.rdbTotalAverage1 = statistics.mean(self.rdbTotalAverage1)
-                self.rdbTotalAverage2 = statistics.mean(self.rdbTotalAverage2)
-                self.rdbTotalAverage3 = statistics.mean(self.rdbTotalAverage3)
-                self.rdbTotalAverage4 = statistics.mean(self.rdbTotalAverage4)
-                self.rdbTotalAverage5 = statistics.mean(self.rdbTotalAverage5)
-                self.rdbTotalAverage6 = statistics.mean(self.rdbTotalAverage6)
-                self.rdbTotalAverage8 = statistics.mean(self.rdbTotalAverage8)
+                            self.rdbTotalMaximum1.append(maximum1)
+                            self.rdbTotalMaximum2.append(maximum2)
+                            self.rdbTotalMaximum3.append(maximum3)
+                            self.rdbTotalMaximum4.append(maximum4)
+                            self.rdbTotalMaximum5.append(maximum5)
+                            self.rdbTotalMaximum6.append(maximum6)
+                            self.rdbTotalMaximum8.append(maximum8)
 
-                self.rdbTotalMinimum1 = min(self.rdbTotalMinimum1)
-                self.rdbTotalMinimum2 = min(self.rdbTotalMinimum2)
-                self.rdbTotalMinimum3 = min(self.rdbTotalMinimum3)
-                self.rdbTotalMinimum4 = min(self.rdbTotalMinimum4)
-                self.rdbTotalMinimum5 = min(self.rdbTotalMinimum5)
-                self.rdbTotalMinimum6 = min(self.rdbTotalMinimum6)
-                self.rdbTotalMinimum8 = min(self.rdbTotalMinimum8)
+                        elif self.rdbModelCode == "RDB4200801":
+                            average2 = inspectionData.iloc[4].mean()
+                            average4 = inspectionData.iloc[6].mean()
+                            average5 = inspectionData.iloc[7].mean()
+                            average6 = inspectionData.iloc[8].mean()
+                            average7 = inspectionData.iloc[9].mean()
+                            average8 = inspectionData.iloc[10].mean()
+                            average9 = inspectionData.iloc[11].mean()
 
-                self.rdbTotalMaximum1 = max(self.rdbTotalMaximum1)
-                self.rdbTotalMaximum2 = max(self.rdbTotalMaximum2)
-                self.rdbTotalMaximum3 = max(self.rdbTotalMaximum3)
-                self.rdbTotalMaximum4 = max(self.rdbTotalMaximum4)
-                self.rdbTotalMaximum5 = max(self.rdbTotalMaximum5)
-                self.rdbTotalMaximum6 = max(self.rdbTotalMaximum6)
-                self.rdbTotalMaximum8 = max(self.rdbTotalMaximum8)
+                            minimum2 = inspectionData.iloc[4].min()
+                            minimum4 = inspectionData.iloc[6].min()
+                            minimum5 = inspectionData.iloc[7].min()
+                            minimum6 = inspectionData.iloc[8].min()
+                            minimum7 = inspectionData.iloc[9].min()
+                            minimum8 = inspectionData.iloc[10].min()
+                            minimum9 = inspectionData.iloc[11].min()
 
-                self.rdbTotalAverage1 = f"{self.rdbTotalAverage1:.2f}"
-                self.rdbTotalAverage2 = f"{self.rdbTotalAverage2:.2f}"
-                self.rdbTotalAverage3 = f"{self.rdbTotalAverage3:.2f}"
-                self.rdbTotalAverage4 = f"{self.rdbTotalAverage4:.2f}"
-                self.rdbTotalAverage5 = f"{self.rdbTotalAverage5:.2f}"
-                self.rdbTotalAverage6 = f"{self.rdbTotalAverage6:.2f}"
-                self.rdbTotalAverage8 = f"{self.rdbTotalAverage8:.2f}"
+                            maximum2 = inspectionData.iloc[4].max()
+                            maximum4 = inspectionData.iloc[6].max()
+                            maximum5 = inspectionData.iloc[7].max()
+                            maximum6 = inspectionData.iloc[8].max()
+                            maximum7 = inspectionData.iloc[9].max()
+                            maximum8 = inspectionData.iloc[10].max()
+                            maximum9 = inspectionData.iloc[11].max()
 
-                self.rdbTotalMinimum1 = f"{self.rdbTotalMinimum1:.2f}"
-                self.rdbTotalMinimum2 = f"{self.rdbTotalMinimum2:.2f}"
-                self.rdbTotalMinimum3 = f"{self.rdbTotalMinimum3:.2f}"
-                self.rdbTotalMinimum4 = f"{self.rdbTotalMinimum4:.2f}"
-                self.rdbTotalMinimum5 = f"{self.rdbTotalMinimum5:.2f}"
-                self.rdbTotalMinimum6 = f"{self.rdbTotalMinimum6:.2f}"
-                self.rdbTotalMinimum8 = f"{self.rdbTotalMinimum8:.2f}"
+                            self.rdbTotalAverage2.append(average2)
+                            self.rdbTotalAverage4.append(average4)
+                            self.rdbTotalAverage5.append(average5)
+                            self.rdbTotalAverage6.append(average6)
+                            self.rdbTotalAverage7.append(average7)
+                            self.rdbTotalAverage8.append(average8)
+                            self.rdbTotalAverage9.append(average9)
 
-                self.rdbTotalMaximum1 = f"{self.rdbTotalMaximum1:.2f}"
-                self.rdbTotalMaximum2 = f"{self.rdbTotalMaximum2:.2f}"
-                self.rdbTotalMaximum3 = f"{self.rdbTotalMaximum3:.2f}"
-                self.rdbTotalMaximum4 = f"{self.rdbTotalMaximum4:.2f}"
-                self.rdbTotalMaximum5 = f"{self.rdbTotalMaximum5:.2f}"
-                self.rdbTotalMaximum6 = f"{self.rdbTotalMaximum6:.2f}"
-                self.rdbTotalMaximum8 = f"{self.rdbTotalMaximum8:.2f}"
+                            self.rdbTotalMinimum2.append(minimum2)
+                            self.rdbTotalMinimum4.append(minimum4)
+                            self.rdbTotalMinimum5.append(minimum5)
+                            self.rdbTotalMinimum6.append(minimum6)
+                            self.rdbTotalMinimum7.append(minimum7)
+                            self.rdbTotalMinimum8.append(minimum8)
+                            self.rdbTotalMinimum9.append(minimum9)
 
-                self.rdbTotalAverage7 = "None"
-                self.rdbTotalMinimum7 = "None"
-                self.rdbTotalMaximum7 = "None"
+                            self.rdbTotalMaximum2.append(maximum2)
+                            self.rdbTotalMaximum4.append(maximum4)
+                            self.rdbTotalMaximum5.append(maximum5)
+                            self.rdbTotalMaximum6.append(maximum6)
+                            self.rdbTotalMaximum7.append(maximum7)
+                            self.rdbTotalMaximum8.append(maximum8)
+                            self.rdbTotalMaximum9.append(maximum9)
 
-                self.rdbTotalAverage9 = "None"
-                self.rdbTotalMinimum9 = "None"
-                self.rdbTotalMaximum9 = "None"
+                    if self.rdbModelCode == "RDB5200200":
+
+                        self.rdbTotalAverage1 = statistics.mean(self.rdbTotalAverage1)
+                        self.rdbTotalAverage2 = statistics.mean(self.rdbTotalAverage2)
+                        self.rdbTotalAverage3 = statistics.mean(self.rdbTotalAverage3)
+                        self.rdbTotalAverage4 = statistics.mean(self.rdbTotalAverage4)
+                        self.rdbTotalAverage5 = statistics.mean(self.rdbTotalAverage5)
+                        self.rdbTotalAverage6 = statistics.mean(self.rdbTotalAverage6)
+                        self.rdbTotalAverage8 = statistics.mean(self.rdbTotalAverage8)
+
+                        self.rdbTotalMinimum1 = min(self.rdbTotalMinimum1)
+                        self.rdbTotalMinimum2 = min(self.rdbTotalMinimum2)
+                        self.rdbTotalMinimum3 = min(self.rdbTotalMinimum3)
+                        self.rdbTotalMinimum4 = min(self.rdbTotalMinimum4)
+                        self.rdbTotalMinimum5 = min(self.rdbTotalMinimum5)
+                        self.rdbTotalMinimum6 = min(self.rdbTotalMinimum6)
+                        self.rdbTotalMinimum8 = min(self.rdbTotalMinimum8)
+
+                        self.rdbTotalMaximum1 = max(self.rdbTotalMaximum1)
+                        self.rdbTotalMaximum2 = max(self.rdbTotalMaximum2)
+                        self.rdbTotalMaximum3 = max(self.rdbTotalMaximum3)
+                        self.rdbTotalMaximum4 = max(self.rdbTotalMaximum4)
+                        self.rdbTotalMaximum5 = max(self.rdbTotalMaximum5)
+                        self.rdbTotalMaximum6 = max(self.rdbTotalMaximum6)
+                        self.rdbTotalMaximum8 = max(self.rdbTotalMaximum8)
+
+                        self.rdbTotalAverage1 = f"{self.rdbTotalAverage1:.2f}"
+                        self.rdbTotalAverage2 = f"{self.rdbTotalAverage2:.2f}"
+                        self.rdbTotalAverage3 = f"{self.rdbTotalAverage3:.2f}"
+                        self.rdbTotalAverage4 = f"{self.rdbTotalAverage4:.2f}"
+                        self.rdbTotalAverage5 = f"{self.rdbTotalAverage5:.2f}"
+                        self.rdbTotalAverage6 = f"{self.rdbTotalAverage6:.2f}"
+                        self.rdbTotalAverage8 = f"{self.rdbTotalAverage8:.2f}"
+
+                        self.rdbTotalMinimum1 = f"{self.rdbTotalMinimum1:.2f}"
+                        self.rdbTotalMinimum2 = f"{self.rdbTotalMinimum2:.2f}"
+                        self.rdbTotalMinimum3 = f"{self.rdbTotalMinimum3:.2f}"
+                        self.rdbTotalMinimum4 = f"{self.rdbTotalMinimum4:.2f}"
+                        self.rdbTotalMinimum5 = f"{self.rdbTotalMinimum5:.2f}"
+                        self.rdbTotalMinimum6 = f"{self.rdbTotalMinimum6:.2f}"
+                        self.rdbTotalMinimum8 = f"{self.rdbTotalMinimum8:.2f}"
+
+                        self.rdbTotalMaximum1 = f"{self.rdbTotalMaximum1:.2f}"
+                        self.rdbTotalMaximum2 = f"{self.rdbTotalMaximum2:.2f}"
+                        self.rdbTotalMaximum3 = f"{self.rdbTotalMaximum3:.2f}"
+                        self.rdbTotalMaximum4 = f"{self.rdbTotalMaximum4:.2f}"
+                        self.rdbTotalMaximum5 = f"{self.rdbTotalMaximum5:.2f}"
+                        self.rdbTotalMaximum6 = f"{self.rdbTotalMaximum6:.2f}"
+                        self.rdbTotalMaximum8 = f"{self.rdbTotalMaximum8:.2f}"
+
+                        self.rdbTotalAverage7 = "None"
+                        self.rdbTotalMinimum7 = "None"
+                        self.rdbTotalMaximum7 = "None"
+
+                        self.rdbTotalAverage9 = "None"
+                        self.rdbTotalMinimum9 = "None"
+                        self.rdbTotalMaximum9 = "None"
+
+                        break
+
+                    elif self.rdbModelCode == "RDB4200801":
+
+                        self.rdbTotalAverage2 = statistics.mean(self.rdbTotalAverage2)
+                        self.rdbTotalAverage4 = statistics.mean(self.rdbTotalAverage4)
+                        self.rdbTotalAverage5 = statistics.mean(self.rdbTotalAverage5)
+                        self.rdbTotalAverage6 = statistics.mean(self.rdbTotalAverage6)
+                        self.rdbTotalAverage7 = statistics.mean(self.rdbTotalAverage7)
+                        self.rdbTotalAverage8 = statistics.mean(self.rdbTotalAverage8)
+                        self.rdbTotalAverage9 = statistics.mean(self.rdbTotalAverage9)
+
+                        self.rdbTotalMinimum2 = min(self.rdbTotalMinimum2)
+                        self.rdbTotalMinimum4 = min(self.rdbTotalMinimum4)
+                        self.rdbTotalMinimum5 = min(self.rdbTotalMinimum5)
+                        self.rdbTotalMinimum6 = min(self.rdbTotalMinimum6)
+                        self.rdbTotalMinimum7 = min(self.rdbTotalMinimum7)
+                        self.rdbTotalMinimum8 = min(self.rdbTotalMinimum8)
+                        self.rdbTotalMinimum9 = min(self.rdbTotalMinimum9)
+
+                        self.rdbTotalMaximum2 = max(self.rdbTotalMaximum2)
+                        self.rdbTotalMaximum4 = max(self.rdbTotalMaximum4)
+                        self.rdbTotalMaximum5 = max(self.rdbTotalMaximum5)
+                        self.rdbTotalMaximum6 = max(self.rdbTotalMaximum6)
+                        self.rdbTotalMaximum7 = max(self.rdbTotalMaximum7)
+                        self.rdbTotalMaximum8 = max(self.rdbTotalMaximum8)
+                        self.rdbTotalMaximum9 = max(self.rdbTotalMaximum9)
+
+                        self.rdbTotalAverage2 = f"{self.rdbTotalAverage2:.2f}"
+                        self.rdbTotalAverage4 = f"{self.rdbTotalAverage4:.2f}"
+                        self.rdbTotalAverage5 = f"{self.rdbTotalAverage5:.2f}"
+                        self.rdbTotalAverage6 = f"{self.rdbTotalAverage6:.2f}"
+                        self.rdbTotalAverage7 = f"{self.rdbTotalAverage7:.2f}"
+                        self.rdbTotalAverage8 = f"{self.rdbTotalAverage8:.2f}"
+                        self.rdbTotalAverage9 = f"{self.rdbTotalAverage9:.2f}"
+
+                        self.rdbTotalMinimum2 = f"{self.rdbTotalMinimum2:.2f}"
+                        self.rdbTotalMinimum4 = f"{self.rdbTotalMinimum4:.2f}"
+                        self.rdbTotalMinimum5 = f"{self.rdbTotalMinimum5:.2f}"
+                        self.rdbTotalMinimum6 = f"{self.rdbTotalMinimum6:.2f}"
+                        self.rdbTotalMinimum7 = f"{self.rdbTotalMinimum7:.2f}"
+                        self.rdbTotalMinimum8 = f"{self.rdbTotalMinimum8:.2f}"
+                        self.rdbTotalMinimum9 = f"{self.rdbTotalMinimum9:.2f}"
+
+                        self.rdbTotalMaximum2 = f"{self.rdbTotalMaximum2:.2f}"
+                        self.rdbTotalMaximum4 = f"{self.rdbTotalMaximum4:.2f}"
+                        self.rdbTotalMaximum5 = f"{self.rdbTotalMaximum5:.2f}"
+                        self.rdbTotalMaximum6 = f"{self.rdbTotalMaximum6:.2f}"
+                        self.rdbTotalMaximum7 = f"{self.rdbTotalMaximum7:.2f}"
+                        self.rdbTotalMaximum8 = f"{self.rdbTotalMaximum8:.2f}"
+                        self.rdbTotalMaximum9 = f"{self.rdbTotalMaximum9:.2f}"
+
+                        self.rdbTotalAverage1 = "None"
+                        self.rdbTotalMinimum1 = "None"
+                        self.rdbTotalMaximum1 = "None"
+
+                        self.rdbTotalAverage3 = "None"
+                        self.rdbTotalMinimum3 = "None"
+                        self.rdbTotalMaximum3 = "None"
+
+                        break
+
+                except Exception as e:
+                    print(f"Error Cannot Get RDB Data {e}")
 
                 print(f"RDB Total Average 1: {self.rdbTotalAverage1}")
                 print(f"RDB Total Average 2: {self.rdbTotalAverage2}")
@@ -475,170 +637,45 @@ class rDB():
                 print(f"RDB Total Maximum 8: {self.rdbTotalMaximum8}")
                 print(f"RDB Total Maximum 9: {self.rdbTotalMaximum9}")
 
-            elif self.rdbModelCode == "RDB4200801":
-                #Getting The Row, Column Location Of HIBLOW
-                findHiblow = [(index, column) for index, row in self.rdbData.iterrows() for column, value in row.items() if value == "SUPPLIER"]
-                hiblowRow = [index for index, _ in findHiblow]
-                hiblowColumn = [column for _, column in findHiblow]
+            print(f"Selected RDB Total Average 1: {self.rdbTotalAverage1}")
+            print(f"Selected RDB Total Average 2: {self.rdbTotalAverage2}")
+            print(f"Selected RDB Total Average 3: {self.rdbTotalAverage3}")
+            print(f"Selected RDB Total Average 4: {self.rdbTotalAverage4}")
+            print(f"Selected RDB Total Average 5: {self.rdbTotalAverage5}")
+            print(f"Selected RDB Total Average 6: {self.rdbTotalAverage6}")
+            print(f"Selected RDB Total Average 7: {self.rdbTotalAverage7}")
+            print(f"Selected RDB Total Average 8: {self.rdbTotalAverage8}")
+            print(f"Selected RDB Total Average 9: {self.rdbTotalAverage9}")
 
-                print("Row indices:", hiblowRow)
-                print("Column names:", hiblowColumn)
+            print(f"Selected RDB Total Minimum 1: {self.rdbTotalMinimum1}")
+            print(f"Selected RDB Total Minimum 2: {self.rdbTotalMinimum2}")
+            print(f"Selected RDB Total Minimum 3: {self.rdbTotalMinimum3}")
+            print(f"Selected RDB Total Minimum 4: {self.rdbTotalMinimum4}")
+            print(f"Selected RDB Total Minimum 5: {self.rdbTotalMinimum5}")
+            print(f"Selected RDB Total Minimum 6: {self.rdbTotalMinimum6}")
+            print(f"Selected RDB Total Minimum 7: {self.rdbTotalMinimum7}")
+            print(f"Selected RDB Total Minimum 8: {self.rdbTotalMinimum8}")
+            print(f"Selected RDB Total Minimum 9: {self.rdbTotalMinimum9}")
 
-                # Get the Neighboring Data Of Hiblow
-                hiblowFiltered = self.rdbData.iloc[max(0, hiblowRow[0] - 3):min(len(self.rdbData), hiblowRow[0] + 10), self.rdbData.columns.get_loc(hiblowColumn[0]):self.rdbData.columns.get_loc(hiblowColumn[0]) + 999999]
-
-                #Getting The Row, Column Location Of Lot Number
-                findLotNumber = [(index, column) for index, row in hiblowFiltered.iterrows() for column, value in row.items() if value == self.rdbLotNumber]
-                lotNumberRow = [index for index, _ in findLotNumber]
-                lotNumberColumn = [column for _, column in findLotNumber]
-
-                print("Row indices:", lotNumberRow)
-                print("Column names:", lotNumberColumn)
-
-                for a in range(0, len(lotNumberColumn)):
-                    # Get The Neighboring Data of Lot Number
-                    inspectionData = self.rdbData.iloc[max(0, lotNumberRow[a]):min(len(self.rdbData), lotNumberRow[a] + 11), self.rdbData.columns.get_loc(lotNumberColumn[a]):self.rdbData.columns.get_loc(lotNumberColumn[a]) + 5]
-
-                    average2 = inspectionData.iloc[4].mean()
-                    average4 = inspectionData.iloc[6].mean()
-                    average5 = inspectionData.iloc[7].mean()
-                    average6 = inspectionData.iloc[8].mean()
-                    average7 = inspectionData.iloc[9].mean()
-                    average8 = inspectionData.iloc[10].mean()
-                    average9 = inspectionData.iloc[11].mean()
-
-                    minimum2 = inspectionData.iloc[4].min()
-                    minimum4 = inspectionData.iloc[6].min()
-                    minimum5 = inspectionData.iloc[7].min()
-                    minimum6 = inspectionData.iloc[8].min()
-                    minimum7 = inspectionData.iloc[9].min()
-                    minimum8 = inspectionData.iloc[10].min()
-                    minimum9 = inspectionData.iloc[11].min()
-
-                    maximum2 = inspectionData.iloc[4].max()
-                    maximum4 = inspectionData.iloc[6].max()
-                    maximum5 = inspectionData.iloc[7].max()
-                    maximum6 = inspectionData.iloc[8].max()
-                    maximum7 = inspectionData.iloc[9].max()
-                    maximum8 = inspectionData.iloc[10].max()
-                    maximum9 = inspectionData.iloc[11].max()
-
-                    self.rdbTotalAverage2.append(average2)
-                    self.rdbTotalAverage4.append(average4)
-                    self.rdbTotalAverage5.append(average5)
-                    self.rdbTotalAverage6.append(average6)
-                    self.rdbTotalAverage7.append(average7)
-                    self.rdbTotalAverage8.append(average8)
-                    self.rdbTotalAverage9.append(average9)
-
-                    self.rdbTotalMinimum2.append(minimum2)
-                    self.rdbTotalMinimum4.append(minimum4)
-                    self.rdbTotalMinimum5.append(minimum5)
-                    self.rdbTotalMinimum6.append(minimum6)
-                    self.rdbTotalMinimum7.append(minimum7)
-                    self.rdbTotalMinimum8.append(minimum8)
-                    self.rdbTotalMinimum9.append(minimum9)
-
-                    self.rdbTotalMaximum2.append(maximum2)
-                    self.rdbTotalMaximum4.append(maximum4)
-                    self.rdbTotalMaximum5.append(maximum5)
-                    self.rdbTotalMaximum6.append(maximum6)
-                    self.rdbTotalMaximum7.append(maximum7)
-                    self.rdbTotalMaximum8.append(maximum8)
-                    self.rdbTotalMaximum9.append(maximum9)
-
-                self.rdbTotalAverage2 = statistics.mean(self.rdbTotalAverage2)
-                self.rdbTotalAverage4 = statistics.mean(self.rdbTotalAverage4)
-                self.rdbTotalAverage5 = statistics.mean(self.rdbTotalAverage5)
-                self.rdbTotalAverage6 = statistics.mean(self.rdbTotalAverage6)
-                self.rdbTotalAverage7 = statistics.mean(self.rdbTotalAverage7)
-                self.rdbTotalAverage8 = statistics.mean(self.rdbTotalAverage8)
-                self.rdbTotalAverage9 = statistics.mean(self.rdbTotalAverage9)
-
-                self.rdbTotalMinimum2 = min(self.rdbTotalMinimum2)
-                self.rdbTotalMinimum4 = min(self.rdbTotalMinimum4)
-                self.rdbTotalMinimum5 = min(self.rdbTotalMinimum5)
-                self.rdbTotalMinimum6 = min(self.rdbTotalMinimum6)
-                self.rdbTotalMinimum7 = min(self.rdbTotalMinimum7)
-                self.rdbTotalMinimum8 = min(self.rdbTotalMinimum8)
-                self.rdbTotalMinimum9 = min(self.rdbTotalMinimum9)
-
-                self.rdbTotalMaximum2 = max(self.rdbTotalMaximum2)
-                self.rdbTotalMaximum4 = max(self.rdbTotalMaximum4)
-                self.rdbTotalMaximum5 = max(self.rdbTotalMaximum5)
-                self.rdbTotalMaximum6 = max(self.rdbTotalMaximum6)
-                self.rdbTotalMaximum7 = max(self.rdbTotalMaximum7)
-                self.rdbTotalMaximum8 = max(self.rdbTotalMaximum8)
-                self.rdbTotalMaximum9 = max(self.rdbTotalMaximum9)
-
-                self.rdbTotalAverage2 = f"{self.rdbTotalAverage2:.2f}"
-                self.rdbTotalAverage4 = f"{self.rdbTotalAverage4:.2f}"
-                self.rdbTotalAverage5 = f"{self.rdbTotalAverage5:.2f}"
-                self.rdbTotalAverage6 = f"{self.rdbTotalAverage6:.2f}"
-                self.rdbTotalAverage7 = f"{self.rdbTotalAverage7:.2f}"
-                self.rdbTotalAverage8 = f"{self.rdbTotalAverage8:.2f}"
-                self.rdbTotalAverage9 = f"{self.rdbTotalAverage9:.2f}"
-
-                self.rdbTotalMinimum2 = f"{self.rdbTotalMinimum2:.2f}"
-                self.rdbTotalMinimum4 = f"{self.rdbTotalMinimum4:.2f}"
-                self.rdbTotalMinimum5 = f"{self.rdbTotalMinimum5:.2f}"
-                self.rdbTotalMinimum6 = f"{self.rdbTotalMinimum6:.2f}"
-                self.rdbTotalMinimum7 = f"{self.rdbTotalMinimum7:.2f}"
-                self.rdbTotalMinimum8 = f"{self.rdbTotalMinimum8:.2f}"
-                self.rdbTotalMinimum9 = f"{self.rdbTotalMinimum9:.2f}"
-
-                self.rdbTotalMaximum2 = f"{self.rdbTotalMaximum2:.2f}"
-                self.rdbTotalMaximum4 = f"{self.rdbTotalMaximum4:.2f}"
-                self.rdbTotalMaximum5 = f"{self.rdbTotalMaximum5:.2f}"
-                self.rdbTotalMaximum6 = f"{self.rdbTotalMaximum6:.2f}"
-                self.rdbTotalMaximum7 = f"{self.rdbTotalMaximum7:.2f}"
-                self.rdbTotalMaximum8 = f"{self.rdbTotalMaximum8:.2f}"
-                self.rdbTotalMaximum9 = f"{self.rdbTotalMaximum9:.2f}"
-
-                self.rdbTotalAverage1 = "None"
-                self.rdbTotalMinimum1 = "None"
-                self.rdbTotalMaximum1 = "None"
-
-                self.rdbTotalAverage3 = "None"
-                self.rdbTotalMinimum3 = "None"
-                self.rdbTotalMaximum3 = "None"
-
-                print(f"RDB Total Average 1: {self.rdbTotalAverage1}")
-                print(f"RDB Total Average 2: {self.rdbTotalAverage2}")
-                print(f"RDB Total Average 3: {self.rdbTotalAverage3}")
-                print(f"RDB Total Average 4: {self.rdbTotalAverage4}")
-                print(f"RDB Total Average 5: {self.rdbTotalAverage5}")
-                print(f"RDB Total Average 6: {self.rdbTotalAverage6}")
-                print(f"RDB Total Average 7: {self.rdbTotalAverage7}")
-                print(f"RDB Total Average 8: {self.rdbTotalAverage8}")
-                print(f"RDB Total Average 9: {self.rdbTotalAverage9}")
-
-                print(f"RDB Total Minimum 1: {self.rdbTotalMinimum1}")
-                print(f"RDB Total Minimum 2: {self.rdbTotalMinimum2}")
-                print(f"RDB Total Minimum 3: {self.rdbTotalMinimum3}")
-                print(f"RDB Total Minimum 4: {self.rdbTotalMinimum4}")
-                print(f"RDB Total Minimum 5: {self.rdbTotalMinimum5}")
-                print(f"RDB Total Minimum 6: {self.rdbTotalMinimum6}")
-                print(f"RDB Total Minimum 7: {self.rdbTotalMinimum7}")
-                print(f"RDB Total Minimum 8: {self.rdbTotalMinimum8}")
-                print(f"RDB Total Minimum 9: {self.rdbTotalMinimum9}")
-
-                print(f"RDB Total Maximum 1: {self.rdbTotalMaximum1}")
-                print(f"RDB Total Maximum 2: {self.rdbTotalMaximum2}")
-                print(f"RDB Total Maximum 3: {self.rdbTotalMaximum3}")
-                print(f"RDB Total Maximum 4: {self.rdbTotalMaximum4}")
-                print(f"RDB Total Maximum 5: {self.rdbTotalMaximum5}")
-                print(f"RDB Total Maximum 6: {self.rdbTotalMaximum6}")
-                print(f"RDB Total Maximum 7: {self.rdbTotalMaximum7}")
-                print(f"RDB Total Maximum 8: {self.rdbTotalMaximum8}")
-                print(f"RDB Total Maximum 9: {self.rdbTotalMaximum9}")
+            print(f"Selected RDB Total Maximum 1: {self.rdbTotalMaximum1}")
+            print(f"Selected RDB Total Maximum 2: {self.rdbTotalMaximum2}")
+            print(f"Selected RDB Total Maximum 3: {self.rdbTotalMaximum3}")
+            print(f"Selected RDB Total Maximum 4: {self.rdbTotalMaximum4}")
+            print(f"Selected RDB Total Maximum 5: {self.rdbTotalMaximum5}")
+            print(f"Selected RDB Total Maximum 6: {self.rdbTotalMaximum6}")
+            print(f"Selected RDB Total Maximum 7: {self.rdbTotalMaximum7}")
+            print(f"Selected RDB Total Maximum 8: {self.rdbTotalMaximum8}")
+            print(f"Selected RDB Total Maximum 9: {self.rdbTotalMaximum9}")
             
 #%%
-rdb = rDB()
-DateAndTimeManager.GetDateToday()
-rdb.readingYear = int(DateAndTimeManager.yearNow)
-# rdb.ReadCheckSheet("20241209-D", "RDB5200200")
-rdb.ReadCheckSheet("3P00015758-3", "RDB4200801")
-rdb.ReadRDB5200200()
-# print(len(rdb.fileList))
-rdb.GettingData()
+# rdb = rDB()
+# DateAndTimeManager.GetDateToday()
+# rdb.readingYear = int(DateAndTimeManager.yearNow)
+# # rdb.ReadCheckSheet("20241209-D", "RDB5200200")
+# rdb.ReadCheckSheet("3P00015758-3", "RDB4200801")
+# rdb.ReadRDB5200200()
+# # rdb.fileList[0]
+# # print(len(rdb.fileList))
+# rdb.GettingData()
+
+# %%
